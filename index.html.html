@@ -1,0 +1,634 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ผลไม้นับเลข</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;500;600;700&display=swap">
+<style>
+/* Layout concept: single phone-width column, big touch targets, fruit tray on top, answer slot in the middle, number tiles at the thumb at the bottom. */
+:root{
+  color-scheme:light; --bg:#E4F2F7; --surface:#FFFFFF; --surface-2:#F0F8FB; --ink:#17384A; --muted:#55717F; --line:#BBD9E4;
+  --accent:#2A7DE1; --accent-ink:#FFFFFF; --accent-soft:#D6E8FB;
+  --apple:#E0402F; --apple-d:#A82619; --apple-soft:#FCDAD5; --apple-text:#C93323;
+  --orange:#F59A1C; --orange-d:#C46A00; --orange-soft:#FFE8C2; --orange-text:#B85F00;
+  --leaf:#3F9A55; --leaf-d:#2B6E3B; --stem:#7A4A22;
+  --good:#238A4D; --good-soft:#D8F1E3; --try:#6B4FC4; --try-soft:#E7E1F8;
+  --star:#F5B800; --star-d:#B98600; --edge:rgba(23,56,74,.16);
+  --f-display:'Itim','Mali','Noto Sans Thai',system-ui,sans-serif;
+  --f-body:'Mali','Noto Sans Thai',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10232D; --surface:#19343F; --surface-2:#1F3E4B; --ink:#EAF5F9; --muted:#9DB9C6; --line:#2F5565;
+    --accent:#5AA2F5; --accent-ink:#0B1C26; --accent-soft:#25445F;
+    --apple:#F2584A; --apple-d:#FFB3AA; --apple-soft:#5A2B28; --apple-text:#FF8A7D;
+    --orange:#FFA830; --orange-d:#FFD08A; --orange-soft:#5A4018; --orange-text:#FFB347;
+    --leaf:#5CC07A; --leaf-d:#A5E6B8; --stem:#D9A066;
+    --good:#4CC58A; --good-soft:#1C4A38; --try:#B3A0F2; --try-soft:#3A3162;
+    --star:#FFC933; --star-d:#FFE18A; --edge:rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10232D; --surface:#19343F; --surface-2:#1F3E4B; --ink:#EAF5F9; --muted:#9DB9C6; --line:#2F5565;
+  --accent:#5AA2F5; --accent-ink:#0B1C26; --accent-soft:#25445F;
+  --apple:#F2584A; --apple-d:#FFB3AA; --apple-soft:#5A2B28; --apple-text:#FF8A7D;
+  --orange:#FFA830; --orange-d:#FFD08A; --orange-soft:#5A4018; --orange-text:#FFB347;
+  --leaf:#5CC07A; --leaf-d:#A5E6B8; --stem:#D9A066;
+  --good:#4CC58A; --good-soft:#1C4A38; --try:#B3A0F2; --try-soft:#3A3162;
+  --star:#FFC933; --star-d:#FFE18A; --edge:rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:12px 28px;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.app{max-width:520px;margin-inline:auto;display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px}
+.chip-btn{display:inline-flex;align-items:center;gap:6px;height:46px;padding-inline:14px;border-radius:999px;background:var(--surface);border:2px solid var(--line);font-weight:600;font-size:15px;box-shadow:0 3px 0 var(--edge)}
+.chip-btn.icon{width:46px;padding:0;justify-content:center}
+.chip-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.dots{display:flex;gap:8px;align-items:center}
+.dot{width:14px;height:14px;border-radius:50%;border:2.5px solid var(--accent);background:transparent;transition:transform .2s}
+.dot.cur{background:var(--accent-soft);transform:scale(1.3)}
+.dot.done{background:var(--accent)}
+
+/* menu */
+.hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:4px}
+.hero-fruits{display:flex;gap:6px;align-items:flex-end;height:78px}
+.hero-fruits svg{width:68px;height:68px;filter:drop-shadow(0 3px 0 var(--edge))}
+.hero-fruits svg:first-child{transform:rotate(-8deg)}
+.hero-fruits svg:last-child{transform:rotate(8deg)}
+.hero h1{font:400 clamp(44px,13vw,60px)/1.1 var(--f-display);margin:0}
+.hero h1 .a{color:var(--apple-text)} .hero h1 .o{color:var(--orange-text)}
+.hero p{margin:0;color:var(--muted);font-size:16px;text-wrap:balance}
+.modes{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.mode{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:14px;text-align:left;padding:14px;border-radius:24px;background:var(--surface);border:2px solid var(--line);box-shadow:0 5px 0 var(--edge)}
+.mode:active{transform:translateY(3px);box-shadow:0 2px 0 var(--edge)}
+.mode .thumb{display:flex;align-items:center;justify-content:center;gap:3px;height:76px;border-radius:18px;background:var(--surface-2)}
+.mode .thumb svg{width:26px;height:26px}
+.mode .thumb .ghostslot{width:30px;height:30px;border:2.5px dashed var(--accent);border-radius:9px;display:grid;place-items:center;font:400 20px var(--f-display);color:var(--accent)}
+.mode .thumb .plus{font:400 20px var(--f-display);color:var(--muted)}
+.mode h2{margin:0;font:400 clamp(26px,7.5vw,32px)/1.2 var(--f-display)}
+.mode p{margin:2px 0 0;color:var(--muted);font-size:15px;line-height:1.45}
+.foot{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted);font-size:14px;text-align:center}
+
+/* game */
+.prompt-row{display:flex;align-items:center;justify-content:center;gap:12px}
+.prompt{flex:1;min-width:0;margin:0;text-align:center;font:400 clamp(28px,8vw,36px)/1.3 var(--f-display);text-wrap:balance}
+.chip{display:inline-block;padding:0 .35em;border-radius:.5em}
+.chip.apple{background:var(--apple-soft);color:var(--apple-text)}
+.chip.orange{background:var(--orange-soft);color:var(--orange-text)}
+.say{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);border:2px solid var(--accent);box-shadow:0 3px 0 var(--edge)}
+.say:active{transform:translateY(2px)}
+.tray{background:var(--surface);border:2px solid var(--line);border-radius:26px;padding:16px 14px 10px;box-shadow:0 5px 0 var(--edge);display:flex;flex-direction:column;gap:8px;--fs:clamp(44px,14vw,64px)}
+.fruits{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 10px}
+.tray-cap{margin:0;text-align:center;color:var(--muted);font-size:14px}
+.groups{display:flex;align-items:center;justify-content:center;gap:8px}
+.group{flex:1;min-width:0;background:var(--surface-2);border-radius:20px;padding:10px 8px;min-height:92px;display:flex;align-items:center;justify-content:center;--fs:clamp(30px,9vw,48px)}
+.group .fruits{gap:8px 6px}
+.plus-sign{flex:none;font:400 38px/1 var(--f-display);color:var(--muted)}
+.fruit{position:relative;width:var(--fs);height:var(--fs);transition:transform .12s;touch-action:manipulation}
+.fruit svg{width:100%;height:100%;display:block;filter:drop-shadow(0 2px 0 var(--edge))}
+.fruit:active{transform:scale(.92)}
+.fruit.wig{animation:wig .35s}
+.badge{position:absolute;right:-5px;bottom:-5px;min-width:1.55em;height:1.55em;padding-inline:.15em;border-radius:999px;background:var(--accent);color:var(--accent-ink);border:2px solid var(--surface);font:400 calc(var(--fs)*.36)/1.5em var(--f-display);text-align:center;animation:pop .28s}
+.answer{display:flex;align-items:center;justify-content:center;gap:12px;font:400 clamp(30px,9vw,42px)/1 var(--f-display);flex-wrap:wrap}
+.answer .num{min-width:1ch}
+.answer .op{color:var(--muted)}
+.slot{width:clamp(70px,21vw,84px);height:clamp(70px,21vw,84px);border-radius:20px;border:3.5px dashed var(--accent);background:var(--surface);color:var(--accent);display:grid;place-items:center;font:400 clamp(40px,12vw,52px)/1 var(--f-display);transition:transform .15s,background .15s}
+.slot.over{transform:scale(1.1);background:var(--accent-soft)}
+.slot.ok{border-style:solid;border-color:var(--good);background:var(--good-soft);color:var(--good);animation:pop .35s}
+.slot.no{border-style:solid;border-color:var(--try);background:var(--try-soft);color:var(--try);animation:shake .4s}
+.msg{min-height:40px;text-align:center;font:400 clamp(22px,6.5vw,28px)/1.3 var(--f-display);color:var(--muted);display:flex;align-items:center;justify-content:center}
+.msg.good{color:var(--good)} .msg.try{color:var(--try)}
+.dock{display:grid;min-height:clamp(96px,27vw,112px)}
+.dock>*{grid-area:1/1}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tile{height:clamp(96px,27vw,112px);border-radius:24px;background:var(--surface);border:3.5px solid var(--accent);color:var(--accent);font:400 clamp(48px,15vw,62px)/1 var(--f-display);box-shadow:0 6px 0 var(--edge);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tile.drag{touch-action:none;cursor:grab}
+.tile:active{transform:translateY(3px);box-shadow:0 3px 0 var(--edge)}
+.tile.lifting{opacity:.35}
+.tile:disabled,.tile.wrong{opacity:.28;box-shadow:none;transform:none;cursor:default}
+.tile.ghost{position:fixed;margin:0;z-index:1000;pointer-events:none;box-shadow:0 14px 24px rgba(0,0,0,.25);touch-action:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:60px;padding:12px 26px;border-radius:22px;background:var(--accent);color:var(--accent-ink);font:400 clamp(26px,7.5vw,32px)/1.2 var(--f-display);box-shadow:0 6px 0 var(--edge)}
+.btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--edge)}
+.btn.alt{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+.next{height:100%}
+
+/* matching game */
+.pairs{display:flex;flex-direction:column;gap:10px}
+.pair{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:88px;padding:10px 12px;border-radius:22px;background:var(--surface);border:2px solid var(--line);box-shadow:0 4px 0 var(--edge);--fs:clamp(28px,8.5vw,40px);transition:transform .15s,background .15s,border-color .15s}
+.pair .fruits{flex:1;min-width:0;justify-content:flex-start;gap:6px}
+.pair .slot{flex:none;width:clamp(60px,17vw,72px);height:clamp(60px,17vw,72px);border-radius:16px;font-size:clamp(34px,10vw,44px)}
+.pair.over{transform:scale(1.03);background:var(--accent-soft);border-color:var(--accent)}
+.pair.done{background:var(--good-soft);border-color:var(--good)}
+.tile.sel{background:var(--accent-soft);transform:translateY(-6px)}
+.tile.used{visibility:hidden}
+
+/* end */
+.end{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-top:8px}
+.end h2{margin:0;font:400 clamp(34px,10vw,44px)/1.2 var(--f-display);text-wrap:balance}
+.end p{margin:0;color:var(--muted);font-size:17px;text-wrap:balance}
+.stars{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.star{width:clamp(42px,12.5vw,56px);height:clamp(42px,12.5vw,56px)}
+.star path{stroke-linejoin:round;stroke-width:1.6}
+.star.on path{fill:var(--star);stroke:var(--star-d)}
+.star.on{animation:pop .4s backwards;animation-delay:var(--d,0s)}
+.star.off path{fill:none;stroke:var(--line);stroke-width:1.6}
+.end .count{font:400 clamp(26px,7.5vw,32px)/1.2 var(--f-display);color:var(--ink)}
+.end-actions{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:6px}
+
+/* effects */
+.confetti{position:fixed;width:10px;height:10px;border-radius:3px;z-index:900;pointer-events:none;animation:burst .9s ease-out forwards}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes wig{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes burst{from{transform:translate(0,0) scale(1) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.4) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+
+<div class="app" id="screen"></div>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.lang = 'th';
+var root = document.getElementById('screen');
+function $(s){ return root.querySelector(s); }
+
+var KIND = { apple:{th:'แอปเปิ้ล'}, orange:{th:'ส้ม'} };
+var NUMW = ['ศูนย์','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า','สิบ'];
+var ROUNDS_BY = { count:6, match:4, add:6 };
+var ROUNDS = 6;
+var MODES = {
+  count:{ id:'count', name:'นับผลไม้', desc:'แตะผลไม้ทีละลูกเพื่อนับ แล้วเลือกตัวเลขคำตอบ', input:'tap' },
+  match:{ id:'match', name:'ลากเลขจับคู่', desc:'ลากตัวเลขไปวางคู่กับกลุ่มผลไม้ที่มีจำนวนเท่ากัน', input:'match' },
+  add:{ id:'add', name:'บวกผลไม้', desc:'รวมผลไม้สองกลุ่มเข้าด้วยกัน แล้วหาว่ามีทั้งหมดกี่ลูก', input:'tap' }
+};
+var PRAISE = ['เก่งมาก!','ถูกต้อง!','ยอดเยี่ยม!','เยี่ยมไปเลย!','ทำได้แล้ว!'];
+
+var S = { sound:true, mode:null, round:0, rounds:[], firstTry:[], attempts:0, locked:false, counter:0, token:0, sel:null, matched:0 };
+try { S.sound = localStorage.getItem('fruit-count-sound') !== 'off'; } catch(e){}
+
+/* ---------- helpers ---------- */
+function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function other(k){ return k==='apple' ? 'orange' : 'apple'; }
+function reduced(){ try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){ return false; } }
+
+var ICON = {
+  back:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  on:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>',
+  off:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>',
+  star:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2 6.3 20.3l1.2-6.4L2.8 9.5l6.4-.8z"/></svg>'
+};
+
+function fruitSVG(kind){
+  if(kind === 'apple'){
+    return '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">'
+      + '<path d="M32 20C32 15 33 11 36 7" fill="none" stroke="var(--stem)" stroke-width="3.6" stroke-linecap="round"/>'
+      + '<path d="M32 20C26 14 10 16 9 33C8 47 18 58 26 58C29 58 30 57 32 57C34 57 35 58 38 58C46 58 56 47 55 33C54 16 38 14 32 20Z" fill="var(--apple)" stroke="var(--apple-d)" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<path d="M35 13C38 6 47 5 52 8C49 15 41 17 35 13Z" fill="var(--leaf)" stroke="var(--leaf-d)" stroke-width="2" stroke-linejoin="round"/>'
+      + '<ellipse cx="20" cy="33" rx="4" ry="8" transform="rotate(-18 20 33)" fill="#fff" opacity=".4"/>'
+      + '</svg>';
+  }
+  return '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">'
+    + '<circle cx="32" cy="36" r="22" fill="var(--orange)" stroke="var(--orange-d)" stroke-width="2.5"/>'
+    + '<path d="M33 14C34 8 41 6 47 8C44 13 38 16 33 14Z" fill="var(--leaf)" stroke="var(--leaf-d)" stroke-width="2" stroke-linejoin="round"/>'
+    + '<circle cx="32" cy="14.5" r="2.8" fill="var(--leaf-d)"/>'
+    + '<g fill="var(--orange-d)" opacity=".28"><circle cx="40" cy="40" r="1.5"/><circle cx="34" cy="49" r="1.5"/><circle cx="45" cy="32" r="1.4"/><circle cx="26" cy="45" r="1.4"/><circle cx="38" cy="26" r="1.3"/></g>'
+    + '<ellipse cx="22" cy="30" rx="4.5" ry="8" transform="rotate(-30 22 30)" fill="#fff" opacity=".4"/>'
+    + '</svg>';
+}
+
+/* ---------- sound ---------- */
+var ac = null;
+function tone(f,t,d,type,v){
+  var o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(v || .15, t+.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+d);
+  o.connect(g); g.connect(ac.destination);
+  o.start(t); o.stop(t+d+.05);
+}
+function sfx(kind){
+  if(!S.sound) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if(ac.state === 'suspended') ac.resume();
+    var t = ac.currentTime;
+    if(kind === 'ok'){ tone(523,t,.14); tone(659,t+.12,.14); tone(784,t+.24,.3); }
+    else { tone(300,t,.18,'triangle',.12); tone(262,t+.16,.24,'triangle',.1); }
+  }catch(e){}
+}
+function speak(text, force){
+  if(!S.sound && !force) return;
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH'; u.rate = .85; u.pitch = 1.15;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function stopSpeech(){ try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){} }
+
+function burst(el){
+  if(reduced() || !el) return;
+  var r = el.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  var colors = ['var(--apple)','var(--orange)','var(--leaf)','var(--accent)','var(--star)'];
+  for(var i=0;i<16;i++){
+    var p = document.createElement('i'); p.className = 'confetti';
+    var ang = Math.random()*Math.PI*2, d = 60 + Math.random()*70;
+    p.style.cssText = 'left:'+cx+'px;top:'+cy+'px;background:'+colors[i%5]+';--dx:'+(Math.cos(ang)*d)+'px;--dy:'+(Math.sin(ang)*d-20)+'px;--r:'+rnd(-180,180)+'deg';
+    document.body.appendChild(p);
+    (function(n){ setTimeout(function(){ n.remove(); }, 950); })(p);
+  }
+}
+
+/* ---------- rounds ---------- */
+function makeOptions(ans, min, max){
+  var set = [ans];
+  var cand = shuffle([ans-2,ans-1,ans+1,ans+2].filter(function(v){ return v>=min && v<=max; }));
+  for(var i=0;i<cand.length && set.length<3;i++) set.push(cand[i]);
+  var f = min;
+  while(set.length<3 && f<=max){ if(set.indexOf(f) < 0) set.push(f); f++; }
+  return shuffle(set);
+}
+
+function buildRounds(mode){
+  var out = [], lastKind = null, lastAns = null, KINDS = ['apple','orange'];
+  for(var i=0;i<ROUNDS;i++){
+    if(mode === 'match'){
+      var pool = i<1 ? [1,2,3] : (i<2 ? [1,2,3,4] : [1,2,3,4,5]);
+      var counts = shuffle(pool).slice(0,3);
+      var kinds = counts.map(function(){ return pick(KINDS); });
+      if(kinds[0] === kinds[1] && kinds[1] === kinds[2]) kinds[2] = other(kinds[2]);
+      out.push({ type:'match', counts:counts, kinds:kinds, tiles:shuffle(counts) });
+    } else if(mode === 'add'){
+      var maxSum = i<2 ? 5 : (i<4 ? 7 : 10), a, b, tries = 0;
+      do { a = rnd(1,5); b = rnd(1,5); tries++; } while((a+b > maxSum || a+b === lastAns) && tries < 60);
+      var ka = pick(['apple','orange']);
+      var kb = Math.random() < .7 ? other(ka) : ka;
+      lastAns = a+b;
+      out.push({ type:'add', a:a, b:b, ka:ka, kb:kb, answer:a+b, min:2, max:10 });
+    } else {
+      var lo = i<1 ? 1 : 2, hi = i<1 ? 3 : (i<2 ? 4 : 5), n, t2 = 0;
+      do { n = rnd(lo,hi); t2++; } while(n === lastAns && t2 < 30);
+      var kind = (lastKind && Math.random() < .8) ? other(lastKind) : pick(['apple','orange']);
+      var m = i>=3 ? rnd(1, Math.min(4, 9-n)) : 0;
+      var items = [];
+      for(var x=0;x<n;x++) items.push(kind);
+      for(var y=0;y<m;y++) items.push(other(kind));
+      lastKind = kind; lastAns = n;
+      out.push({ type:'count', kind:kind, answer:n, items: m ? shuffle(items) : items, min:1, max:5 });
+    }
+  }
+  return out;
+}
+
+/* ---------- screens ---------- */
+function soundBtn(label){
+  return '<button class="chip-btn'+(label?'':' icon')+'" id="snd" aria-pressed="'+S.sound+'" aria-label="เสียง'+(S.sound?' เปิดอยู่':' ปิดอยู่')+'">'
+    + (S.sound ? ICON.on : ICON.off) + (label ? '<span>เสียง: '+(S.sound?'เปิด':'ปิด')+'</span>' : '') + '</button>';
+}
+function wireSound(){
+  var b = $('#snd'); if(!b) return;
+  b.addEventListener('click', function(){
+    S.sound = !S.sound;
+    try{ localStorage.setItem('fruit-count-sound', S.sound ? 'on' : 'off'); }catch(e){}
+    if(!S.sound) stopSpeech();
+    var inGame = !!$('.dots');
+    b.outerHTML = soundBtn(!inGame);
+    wireSound();
+    if(S.sound) sfx('ok');
+  });
+}
+
+function renderMenu(){
+  S.token++; stopSpeech(); S.mode = null;
+  root.innerHTML =
+    '<div class="bar"><span></span>'+soundBtn(true)+'</div>'
+  + '<header class="hero"><div class="hero-fruits">'+fruitSVG('apple')+fruitSVG('orange')+'</div>'
+  + '<h1><span class="a">ผลไม้</span><span class="o">นับเลข</span></h1>'
+  + '<p>เกมนับเลขและบวกเลข สำหรับเด็กอนุบาล 2</p></header>'
+  + '<nav class="modes" aria-label="เลือกเกม">'
+  + '<button class="mode" data-mode="count"><div class="thumb">'+fruitSVG('apple')+fruitSVG('apple')+fruitSVG('apple')+'</div><div><h2>'+MODES.count.name+'</h2><p>'+MODES.count.desc+'</p></div></button>'
+  + '<button class="mode" data-mode="match"><div class="thumb">'+fruitSVG('orange')+fruitSVG('orange')+'<span class="ghostslot">2</span></div><div><h2>'+MODES.match.name+'</h2><p>'+MODES.match.desc+'</p></div></button>'
+  + '<button class="mode" data-mode="add"><div class="thumb">'+fruitSVG('apple')+'<span class="plus">+</span>'+fruitSVG('orange')+'</div><div><h2>'+MODES.add.name+'</h2><p>'+MODES.add.desc+'</p></div></button>'
+  + '</nav>'
+  + '<div class="foot"><span>มีเสียงอ่านโจทย์ให้ฟัง เปิดหรือปิดเสียงได้</span></div>';
+  wireSound();
+  root.querySelectorAll('.mode').forEach(function(b){
+    b.addEventListener('click', function(){ startMode(b.getAttribute('data-mode')); });
+  });
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+function startMode(id){
+  S.mode = id; ROUNDS = ROUNDS_BY[id]; S.round = 0; S.firstTry = []; S.rounds = buildRounds(id);
+  renderRound();
+}
+
+function fruitBtn(kind, isOther){
+  return '<button class="fruit'+(isOther?' other':'')+'" aria-label="'+KIND[kind].th+'">'+fruitSVG(kind)+'<span class="badge" hidden></span></button>';
+}
+
+function renderDots(){
+  var d = $('#dots'); if(!d) return;
+  var h = '';
+  for(var i=0;i<ROUNDS;i++){
+    var cls = 'dot';
+    if(i < S.round || (i === S.round && S.locked)) cls += ' done';
+    else if(i === S.round) cls += ' cur';
+    h += '<span class="'+cls+'"></span>';
+  }
+  d.innerHTML = h;
+  d.setAttribute('aria-label','ข้อที่ '+(S.round+1)+' จาก '+ROUNDS);
+}
+
+function renderRound(){
+  S.token++; S.attempts = 0; S.locked = false; S.counter = 0; S.matched = 0; S.sel = null;
+  var r = S.rounds[S.round], m = MODES[S.mode], token = S.token;
+  var promptHTML, speech, trayHTML, answerHTML = '', trayClass = 'tray';
+
+  if(r.type === 'add'){
+    promptHTML = 'รวมกันมีผลไม้กี่ลูก?';
+    speech = KIND[r.ka].th + NUMW[r.a] + 'ลูก บวก' + KIND[r.kb].th + NUMW[r.b] + 'ลูก รวมกันมีผลไม้กี่ลูก';
+    var ga = '', gb = '', i;
+    for(i=0;i<r.a;i++) ga += fruitBtn(r.ka,false);
+    for(i=0;i<r.b;i++) gb += fruitBtn(r.kb,false);
+    trayHTML = '<div class="groups"><div class="group"><div class="fruits">'+ga+'</div></div><span class="plus-sign" aria-hidden="true">+</span><div class="group"><div class="fruits">'+gb+'</div></div></div>'
+      + '<p class="tray-cap">แตะผลไม้ทีละลูกเพื่อนับทั้งหมด</p>';
+    answerHTML = '<span class="num">'+r.a+'</span><span class="op">+</span><span class="num">'+r.b+'</span><span class="op">=</span><span class="slot" id="slot">?</span>';
+    r.okSpeak = NUMW[r.a] + ' บวก ' + NUMW[r.b] + ' เท่ากับ ' + NUMW[r.answer];
+  } else if(r.type === 'match'){
+    promptHTML = 'ลากเลขไปจับคู่กับผลไม้';
+    speech = 'ลากตัวเลขไปวางคู่กับผลไม้ที่มีจำนวนเท่ากัน';
+    trayClass = 'pairs';
+    trayHTML = r.counts.map(function(c, idx){
+      var fr = '', j;
+      for(j=0;j<c;j++) fr += fruitBtn(r.kinds[idx], false);
+      return '<div class="pair" data-n="'+c+'"><div class="fruits">'+fr+'</div><span class="slot">?</span></div>';
+    }).join('');
+  } else {
+    var kth = KIND[r.kind].th;
+    promptHTML = 'มี<span class="chip '+r.kind+'">'+kth+'</span>กี่ลูก?';
+    speech = 'มี' + kth + 'กี่ลูก';
+    var fr = '';
+    r.items.forEach(function(k){ fr += fruitBtn(k, k !== r.kind); });
+    trayHTML = '<div class="fruits">'+fr+'</div><p class="tray-cap">แตะ'+kth+'ทีละลูกเพื่อนับ</p>';
+    answerHTML = '<span>มี'+kth+'</span><span class="slot" id="slot">?</span><span>ลูก</span>';
+    r.okSpeak = kth + NUMW[r.answer] + 'ลูก';
+  }
+  r.speech = speech;
+
+  var tileNums = r.type === 'match' ? r.tiles : makeOptions(r.answer, r.min, r.max);
+  var tiles = tileNums.map(function(n){
+    return '<button class="tile'+(m.input==='match'?' drag':'')+'" data-n="'+n+'" aria-label="เลข '+n+'">'+n+'</button>';
+  }).join('');
+
+  root.innerHTML =
+    '<div class="bar"><button class="chip-btn" id="back">'+ICON.back+'<span>เมนู</span></button><div class="dots" id="dots" role="img"></div>'+soundBtn(false)+'</div>'
+  + '<section class="prompt-row"><p class="prompt">'+promptHTML+'</p><button class="say" id="say" aria-label="ฟังโจทย์อีกครั้ง">'+ICON.on+'</button></section>'
+  + '<section class="'+trayClass+'" id="tray">'+trayHTML+'</section>'
+  + (answerHTML ? '<section class="answer" aria-label="คำตอบ">'+answerHTML+'</section>' : '')
+  + '<div class="msg" id="msg" aria-live="polite">'+(m.input==='match' ? 'ลากเลขไปวางที่แถวผลไม้ หรือแตะเลขแล้วแตะแถวก็ได้' : '')+'</div>'
+  + '<section class="dock"><div class="tiles" id="tiles">'+tiles+'</div><button class="btn next" id="next" hidden>'+(S.round === ROUNDS-1 ? 'ดูผลคะแนน' : 'ข้อต่อไป')+'</button></section>';
+
+  renderDots(); wireSound();
+  $('#back').addEventListener('click', renderMenu);
+  $('#say').addEventListener('click', function(){ speak(r.speech, true); });
+  $('#next').addEventListener('click', nextRound);
+  $('#tray').addEventListener('click', onFruitTap);
+  root.querySelectorAll('.tile').forEach(function(t){
+    if(m.input === 'match') wireDrag(t);
+    else t.addEventListener('click', function(){ submit(+t.getAttribute('data-n'), t); });
+  });
+  try{ window.scrollTo(0,0); }catch(e){}
+  setTimeout(function(){ if(S.token === token) speak(r.speech); }, 350);
+}
+
+function setBadge(f, n){
+  var b = f.querySelector('.badge');
+  b.textContent = n; b.hidden = false; f.setAttribute('data-n', n);
+}
+function onFruitTap(e){
+  var f = e.target.closest('.fruit');
+  var row = e.target.closest('.pair');
+  if(row && S.sel){ submitMatch(S.sel, row); return; }
+  if(!f) return;
+  if(f.classList.contains('other')){
+    f.classList.remove('wig'); void f.offsetWidth; f.classList.add('wig');
+    return;
+  }
+  if(f.getAttribute('data-n')) return;
+  var n;
+  if(row){ n = (+row.getAttribute('data-c') || 0) + 1; row.setAttribute('data-c', n); }
+  else { n = ++S.counter; }
+  setBadge(f, n);
+  speak(NUMW[n] || String(n));
+}
+function autoCount(scope){
+  var token = S.token;
+  var base = scope || root;
+  var fr = Array.prototype.slice.call(base.querySelectorAll('.fruit:not(.other)'));
+  fr.forEach(function(f){ f.removeAttribute('data-n'); var b = f.querySelector('.badge'); b.hidden = true; });
+  var local = 0;
+  if(scope) scope.setAttribute('data-c','0'); else S.counter = 0;
+  var i = 0;
+  (function step(){
+    if(S.token !== token || i >= fr.length) return;
+    var f = fr[i++]; local++;
+    if(scope) scope.setAttribute('data-c', local); else S.counter = local;
+    setBadge(f, local); speak(NUMW[local] || String(local));
+    setTimeout(step, 750);
+  })();
+}
+
+function msg(text, cls){
+  var m = $('#msg'); if(!m) return;
+  m.textContent = text; m.className = 'msg' + (cls ? ' '+cls : '');
+}
+
+function submit(n, tile){
+  if(S.locked) return;
+  var r = S.rounds[S.round], slot = $('#slot'), token = S.token;
+  if(n === r.answer){
+    S.locked = true;
+    if(S.attempts === 0) S.firstTry[S.round] = true;
+    slot.textContent = n; slot.className = 'slot ok';
+    var p = pick(PRAISE);
+    msg(p, 'good'); sfx('ok'); burst(slot);
+    setTimeout(function(){ if(S.token === token) speak(p + ' ' + r.okSpeak); }, 450);
+    $('#tiles').hidden = true; $('#next').hidden = false;
+    renderDots();
+  } else {
+    S.attempts++;
+    if(tile){ tile.disabled = true; tile.classList.add('wrong'); }
+    slot.textContent = n; slot.className = 'slot no';
+    setTimeout(function(){
+      if(S.token === token && !S.locked){ slot.textContent = '?'; slot.className = 'slot'; }
+    }, 900);
+    sfx('no');
+    if(S.attempts === 1){
+      msg('ลองนับอีกครั้งนะ','try'); speak('ลองนับอีกครั้งนะ');
+    } else {
+      msg('ดูนะ เรามานับด้วยกัน','try'); speak('มานับด้วยกันนะ');
+      setTimeout(function(){ if(S.token === token && !S.locked) autoCount(); }, 1500);
+    }
+  }
+}
+
+function clearSel(){
+  if(S.sel){ S.sel.classList.remove('sel'); S.sel = null; }
+}
+function toggleSel(tile){
+  if(S.locked || tile.disabled) return;
+  if(S.sel === tile){ clearSel(); return; }
+  clearSel(); S.sel = tile; tile.classList.add('sel');
+  msg('แตะแถวผลไม้ที่มีจำนวนเท่ากัน','');
+}
+function rowAt(x,y){
+  var rows = root.querySelectorAll('.pair:not(.done)');
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i].getBoundingClientRect();
+    if(x >= r.left-4 && x <= r.right+4 && y >= r.top-4 && y <= r.bottom+4) return rows[i];
+  }
+  return null;
+}
+function submitMatch(tile, row){
+  if(S.locked || !tile || row.classList.contains('done')) return;
+  var n = +tile.getAttribute('data-n'), need = +row.getAttribute('data-n');
+  var slot = row.querySelector('.slot'), token = S.token;
+  clearSel();
+  if(n === need){
+    slot.textContent = n; slot.className = 'slot ok';
+    row.classList.add('done'); tile.classList.add('used'); tile.disabled = true;
+    S.matched++;
+    sfx('ok'); burst(slot);
+    if(S.matched >= 3){
+      S.locked = true;
+      if(S.attempts === 0) S.firstTry[S.round] = true;
+      var p = pick(PRAISE);
+      msg(p, 'good');
+      setTimeout(function(){ if(S.token === token) speak(p + ' จับคู่ครบแล้ว'); }, 450);
+      $('#tiles').hidden = true; $('#next').hidden = false;
+      renderDots();
+    } else {
+      msg('ถูกต้อง! จับคู่ต่อเลย','good');
+      speak(NUMW[n] + 'ลูก ถูกต้อง');
+    }
+  } else {
+    S.attempts++;
+    slot.textContent = n; slot.className = 'slot no';
+    setTimeout(function(){
+      if(S.token === token && !row.classList.contains('done')){ slot.textContent = '?'; slot.className = 'slot'; }
+    }, 900);
+    sfx('no');
+    if(S.attempts === 1){
+      msg('ลองนับผลไม้อีกครั้งนะ','try'); speak('ลองนับผลไม้อีกครั้งนะ');
+    } else {
+      msg('มานับด้วยกันนะ','try'); speak('มานับด้วยกันนะ');
+      setTimeout(function(){ if(S.token === token && !S.locked) autoCount(row); }, 1200);
+    }
+  }
+}
+
+function wireDrag(tile){
+  var ghost = null, sx = 0, sy = 0, moved = false, id = null, overRow = null;
+  tile.addEventListener('pointerdown', function(e){
+    if(S.locked || tile.disabled) return;
+    id = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false;
+    try{ tile.setPointerCapture(id); }catch(_){}
+    var r = tile.getBoundingClientRect();
+    ghost = tile.cloneNode(true);
+    ghost.classList.remove('sel');
+    ghost.classList.add('ghost');
+    ghost.style.width = r.width+'px'; ghost.style.height = r.height+'px';
+    ghost.style.left = r.left+'px'; ghost.style.top = r.top+'px';
+    ghost.hidden = true;
+    document.body.appendChild(ghost);
+  });
+  tile.addEventListener('pointermove', function(e){
+    if(id === null || e.pointerId !== id) return;
+    var dx = e.clientX - sx, dy = e.clientY - sy;
+    if(!moved && Math.hypot(dx,dy) > 8){ moved = true; ghost.hidden = false; tile.classList.add('lifting'); clearSel(); }
+    if(moved){
+      ghost.style.transform = 'translate('+dx+'px,'+dy+'px) scale(1.12)';
+      var row = rowAt(e.clientX, e.clientY);
+      if(row !== overRow){
+        if(overRow) overRow.classList.remove('over');
+        overRow = row;
+        if(row) row.classList.add('over');
+      }
+    }
+  });
+  function end(e, cancel){
+    if(id === null || e.pointerId !== id) return;
+    id = null;
+    if(ghost){ ghost.remove(); ghost = null; }
+    tile.classList.remove('lifting');
+    if(overRow){ overRow.classList.remove('over'); overRow = null; }
+    if(cancel) return;
+    if(moved){
+      var row = rowAt(e.clientX, e.clientY);
+      if(row) submitMatch(tile, row);
+    } else {
+      toggleSel(tile);
+    }
+  }
+  tile.addEventListener('pointerup', function(e){ end(e,false); });
+  tile.addEventListener('pointercancel', function(e){ end(e,true); });
+  tile.addEventListener('click', function(e){ if(e.detail === 0) toggleSel(tile); });
+}
+
+function nextRound(){
+  S.round++;
+  if(S.round >= ROUNDS) renderEnd(); else renderRound();
+}
+
+function renderEnd(){
+  S.token++; stopSpeech();
+  var k = 0, stars = '';
+  for(var i=0;i<ROUNDS;i++){
+    var on = !!S.firstTry[i]; if(on) k++;
+    stars += '<span class="star '+(on?'on':'off')+'" style="--d:'+(i*0.12)+'s">'+ICON.star+'</span>';
+  }
+  var line = k >= 5 ? 'ตอบถูกตั้งแต่ครั้งแรกเกือบทุกข้อเลย' : 'ลองเล่นอีกครั้ง จะได้ดาวเพิ่มนะ';
+  root.innerHTML =
+    '<div class="bar"><button class="chip-btn" id="back">'+ICON.back+'<span>เมนู</span></button>'+soundBtn(false)+'</div>'
+  + '<section class="end"><div class="hero-fruits">'+fruitSVG('apple')+fruitSVG('orange')+'</div>'
+  + '<h2>เล่นจบแล้ว เก่งมาก!</h2>'
+  + '<div class="stars" role="img" aria-label="ได้ '+k+' ดาว จาก '+ROUNDS+'">'+stars+'</div>'
+  + '<div class="count">ได้ '+k+' ดาว จาก '+ROUNDS+' ข้อ</div>'
+  + '<p>'+line+'</p>'
+  + '<div class="end-actions"><button class="btn" id="again">เล่นอีกครั้ง</button><button class="btn alt" id="menu">เลือกเกมอื่น</button></div></section>';
+  wireSound();
+  $('#back').addEventListener('click', renderMenu);
+  $('#menu').addEventListener('click', renderMenu);
+  $('#again').addEventListener('click', function(){ startMode(S.mode); });
+  sfx('ok');
+  setTimeout(function(){ speak('เล่นจบแล้ว เก่งมากเลย'); }, 500);
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+renderMenu();
+})();
+</script>
+
+</body>
+</html>
+
+</body></html>
